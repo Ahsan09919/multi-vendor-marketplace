@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
+import { finalizePaidOrder } from "@/lib/orders";
 import { checkoutSchema } from "@/lib/validators";
 import { PLACEHOLDER_IMAGE } from "@/lib/utils";
 
@@ -83,6 +84,17 @@ export async function POST(req: Request) {
       req.headers.get("origin") ??
       process.env.NEXTAUTH_URL ??
       "http://localhost:3000";
+
+    // Demo-payment mode: when Stripe is not configured (e.g. Stripe is not
+    // available in the owner's country), complete the order immediately
+    // without charging anything. The Stripe flow below stays fully functional
+    // and is used automatically as soon as STRIPE_SECRET_KEY is set.
+    if (!process.env.STRIPE_SECRET_KEY) {
+      await finalizePaidOrder(order.id);
+      return NextResponse.json({
+        url: `${origin}/checkout/success?order_id=${order.id}`,
+      });
+    }
 
     const stripeSession = await getStripe().checkout.sessions.create({
       mode: "payment",

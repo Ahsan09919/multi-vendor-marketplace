@@ -15,7 +15,9 @@ A production-quality multi-vendor marketplace built for a university Web Technol
 - Product detail page with image gallery, vendor info, stock status and related products
 - Public vendor store pages
 - Persistent shopping cart — localStorage for guests, synced to the database after login
-- Stripe Checkout (test mode) with server-verified prices, success / cancel pages
+- Checkout with server-verified prices, success / cancel pages. Two payment modes:
+  - **Stripe Checkout (test mode)** with webhook — used automatically when Stripe keys are configured
+  - **Demo payment mode** — when no Stripe keys are set, orders complete instantly with no real payment (used for the live demo because Stripe is not available in every country)
 - Order history with per-order detail and live status
 - Dark mode toggle, fully responsive, loading skeletons, toasts, error boundaries
 
@@ -71,9 +73,9 @@ npm run dev
 | `DATABASE_URL` | PostgreSQL connection string |
 | `NEXTAUTH_SECRET` / `AUTH_SECRET` | Session encryption secret |
 | `NEXTAUTH_URL` | Base URL of the app |
-| `STRIPE_SECRET_KEY` | Stripe secret key (test mode, `sk_test_...`) |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key (test mode) |
-| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret (`whsec_...`) |
+| `STRIPE_SECRET_KEY` | _(optional)_ Stripe secret key (test mode, `sk_test_...`) — leave empty for demo payment mode |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | _(optional)_ Stripe publishable key (test mode) |
+| `STRIPE_WEBHOOK_SECRET` | _(optional)_ Stripe webhook signing secret (`whsec_...`) |
 
 ## Demo accounts
 
@@ -84,7 +86,7 @@ npm run dev
 | Vendor (Urban Threads) | `vendor2@markethub.test` | `Vendor123!` |
 | Customer | `customer@markethub.test` | `Customer123!` |
 
-**Test card for Stripe checkout:** `4242 4242 4242 4242`, any future expiry date, any CVC.
+**Payments:** the live demo runs in **demo payment mode** (no Stripe keys configured), so "Place order" completes instantly without a real charge. With Stripe test keys configured, checkout redirects to Stripe — test card `4242 4242 4242 4242`, any future expiry date, any CVC.
 
 ## Project structure
 
@@ -111,3 +113,4 @@ middleware.ts    # role-based route protection
 - Vendors must be `APPROVED` by an admin before creating products; products from suspended vendors are hidden from the storefront.
 - The checkout success page verifies the payment directly with Stripe as an idempotent fallback in case the webhook is delayed.
 - Shipping is free and the currency is USD (demo simplification).
+- **Stripe is not available in the project owner's country**, so the deployed demo uses the built-in demo payment mode. The complete Stripe integration (Checkout Session, signature-verified webhook, stock decrement on payment) is implemented and activates automatically once `STRIPE_SECRET_KEY` / `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` are provided.

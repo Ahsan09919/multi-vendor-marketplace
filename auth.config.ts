@@ -3,6 +3,7 @@ import type { NextAuthConfig } from "next-auth";
 // Edge-safe NextAuth config (no Prisma / bcrypt imports) shared by the
 // middleware and the full server-side auth setup in lib/auth.ts.
 export const authConfig = {
+  trustHost: true,
   pages: {
     signIn: "/login",
   },

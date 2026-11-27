@@ -15,18 +15,23 @@ export const metadata = { title: "Order confirmed" };
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {
-  searchParams: Promise<{ session_id?: string }>;
+  searchParams: Promise<{ session_id?: string; order_id?: string }>;
 }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const { session_id } = await searchParams;
-  if (!session_id) redirect("/");
+  const { session_id, order_id } = await searchParams;
+  if (!session_id && !order_id) redirect("/");
 
-  let order = await prisma.order.findUnique({
-    where: { stripeSessionId: session_id },
-    include: { items: true },
-  });
+  let order = session_id
+    ? await prisma.order.findUnique({
+        where: { stripeSessionId: session_id },
+        include: { items: true },
+      })
+    : await prisma.order.findUnique({
+        where: { id: order_id! },
+        include: { items: true },
+      });
 
   if (!order || order.userId !== session.user.id) {
     redirect("/");
@@ -34,7 +39,7 @@ export default async function CheckoutSuccessPage({
 
   // Fallback in case the webhook has not arrived yet: verify the payment
   // directly with Stripe and finalize the order (idempotent with the webhook).
-  if (order.status === "PENDING") {
+  if (session_id && process.env.STRIPE_SECRET_KEY && order.status === "PENDING") {
     try {
       const stripeSession = await getStripe().checkout.sessions.retrieve(session_id);
       if (stripeSession.payment_status === "paid") {

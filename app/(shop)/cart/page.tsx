@@ -200,10 +200,16 @@ export default function CartPage() {
                 disabled={submitting}
                 className="w-full rounded-lg bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
               >
-                {submitting ? "Redirecting to payment..." : "Pay with Stripe"}
+                {submitting
+                  ? "Placing order..."
+                  : process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+                    ? "Pay with Stripe"
+                    : "Place order"}
               </button>
               <p className="text-center text-xs text-gray-400">
-                Test mode — use card 4242 4242 4242 4242
+                {process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+                  ? "Test mode — use card 4242 4242 4242 4242"
+                  : "Demo checkout — no real payment is made"}
               </p>
             </form>
           )}
