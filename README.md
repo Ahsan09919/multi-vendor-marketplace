@@ -2,7 +2,9 @@
 
 A production-quality multi-vendor marketplace built for a university Web Technologies project. Vendors open their own stores and sell products, customers browse and buy with Stripe (test mode), and an admin oversees the whole platform.
 
-**Live demo:** _(URL added after deployment)_
+**Live demo:** https://multi-vendor-marketplace-topaz.vercel.app
+
+**Repository:** https://github.com/Ahsan09919/multi-vendor-marketplace
 
 ---
 
